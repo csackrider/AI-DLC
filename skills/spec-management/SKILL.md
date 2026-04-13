@@ -7,7 +7,7 @@ tags: [specs, documentation, planning, features]
 requires: []
 author: Melissa Benua
 created_at: 2026-03-07
-updated_at: 2026-04-12
+updated_at: 2026-04-13
 ---
 
 # Spec Management
@@ -36,48 +36,31 @@ Skip a spec when:
 - Task completable in a few hours
 - No cross-team coordination needed
 
-## Spec Location
+## Spec & ADR layout (AIDLC)
 
-```
-project/
-└── specs/
-    ├── specs.md              # Template (copy this)
-    ├── frontend/             # Frontend feature specs
-    │   └── user-profile.md
-    └── backend/              # Backend service specs
-        └── user-api.md
-```
+Use **three** artifacts; do not fold them into one mega-doc:
 
-### Naming Conventions
+| Artifact | Typical path | Purpose |
+|----------|--------------|---------|
+| **Product Spec** | `feature/<slug>/product-spec.md` | Outcomes, users, scenarios, success criteria, scope — **product language** |
+| **Tech Spec** | `feature/<slug>/tech-spec.md` | Implementation per **Unit**; links **ADRs**; testing, rollout, monitoring |
+| **ADR** | `adr/NNNN-short-title.md` | Durable **architectural** decisions (stack shape, auth model, service boundaries, …) |
 
-- Use **kebab-case** for filenames: `user-authentication.md`
-- Name reflects the feature: `payment-processing.md`, not `sprint-14-work.md`
-- Keep names concise but descriptive
+**All templates** (including ADR) live under [`templates/`](templates/) so the Claude Code plugin packages them with **`spec-management`**.
 
-## Spec Structure
+- [`templates/product-spec-template.md`](templates/product-spec-template.md)
+- [`templates/tech-spec-template.md`](templates/tech-spec-template.md)
+- [`templates/adr-template.md`](templates/adr-template.md) — copy into your project’s **`adr/NNNN-title.md`**
+- [`templates/adr-guidance.md`](templates/adr-guidance.md) — naming, when to write, how ADRs relate to Product/Tech specs
 
-Every spec should include these sections:
+### Naming conventions
 
-### Required Sections
+- **Feature folder:** `feature/<kebab-slug>/` stable for the life of the feature
+- **ADRs (in the consumer repo):** `adr/0001-example-title.md` (sequential numbering; use `adr-template.md` as the source to copy, not as a numbered file)
 
-| Section | Purpose |
-|---------|---------|
-| **Overview** | Feature name, type, status, author, date |
-| **Business Context** | Problem statement, goals, non-goals |
-| **Requirements** | Functional and non-functional requirements |
-| **Acceptance Criteria** | Testable criteria for completion |
-| **Technical Approach** | High-level implementation strategy |
+### Legacy `specs/` trees
 
-### Optional Sections
-
-| Section | When to Include |
-|---------|-----------------|
-| **UI/UX** | Frontend specs with mockups |
-| **API Design** | Backend specs with endpoints |
-| **Data Model** | Database changes needed |
-| **Dependencies** | External services, libraries |
-| **Rollout Plan** | Phased rollout, feature flags |
-| **Rollback Plan** | How to revert if issues arise |
+Older repos may still use `specs/frontend/`, `specs/backend/`. Prefer **`feature/<slug>/`** + **`adr/`** for new work so `/plan` and Learn stay aligned.
 
 ## Plan phase (Product Spec): conversation vs. document
 
@@ -196,11 +179,14 @@ When specs have dependencies, link them bidirectionally:
 
 ## Templates
 
-Copy from [templates/](templates/) directory:
+Copy from [templates/](templates/):
 
-- **spec-template.md** - Full feature spec template
-- **bug-spec-template.md** - Bug fix spec (simplified)
-- **spike-template.md** - Research/investigation template
+| File | Use |
+|------|-----|
+| [product-spec-template.md](templates/product-spec-template.md) | Plan → `feature/<slug>/product-spec.md` |
+| [tech-spec-template.md](templates/tech-spec-template.md) | Design → `feature/<slug>/tech-spec.md` |
+| [adr-template.md](templates/adr-template.md) | Learn / Design → project `adr/NNNN-title.md` |
+| [adr-guidance.md](templates/adr-guidance.md) | Convention for the **`adr/`** folder in each repo |
 
 ## Scripts
 
@@ -239,6 +225,8 @@ python scripts/validate-spec.py specs/frontend/my-feature.md
 
 ## Additional Resources
 
-- [Spec Template](templates/spec-template.md)
-- [Validation Script](scripts/validate-spec.py)
+- [Product Spec template](templates/product-spec-template.md)
+- [Tech Spec template](templates/tech-spec-template.md)
+- [ADR template](templates/adr-template.md) · [ADR folder guidance](templates/adr-guidance.md)
+- [Validation Script](scripts/validate-spec.py) (legacy section checks — may not match split specs)
 - [Archive Script](scripts/archive-old-specs.sh)
