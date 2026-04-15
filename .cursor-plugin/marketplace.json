@@ -5,13 +5,14 @@
     "email": ""
   },
   "metadata": {
-    "description": "Agent skills for Cursor and Claude Code: AIDLC phase orchestrators, architecture, testing, git workflow, spec management, backend/frontend, and more.",
-    "version": "1.0.7"
+    "description": "Agent skills for Cursor: AIDLC phase orchestrators, architecture, testing, git workflow, spec management, backend/frontend, and more.",
+    "version": "1.0.7",
+    "pluginRoot": "plugins"
   },
   "plugins": [
     {
       "name": "ai-dlc-skills",
-      "source": "./plugins/ai-dlc-skills",
+      "source": "ai-dlc-skills",
       "description": "Skills for AIDLC phases, architecture, testing, git workflow, specs, backend/frontend, agents, and blog writing.",
       "version": "1.0.7",
       "keywords": ["skills", "aidlc", "architecture", "testing", "git", "workflow", "specs", "agents"]

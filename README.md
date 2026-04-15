@@ -1,6 +1,6 @@
 # AI-DLC
 
-**AI-DLC** is the public **skills and agents library** for the AI Development Lifecycle (AIDLC): phase orchestrators (`/plan`, `/build`, `/review`, `/ship`), domain skills (architecture, testing, backend, frontend, …), and agent bundles. It ships as a **Claude Code marketplace** and works with Cursor via symlinked skill directories.
+**AI-DLC** is the public **skills and agents library** for the AI Development Lifecycle (AIDLC): phase orchestrators (`/plan`, `/build`, `/review`, `/ship`), domain skills (architecture, testing, backend, frontend, …), and agent bundles. It ships as a **Claude Code** and **Cursor team** marketplace (see [`.cursor-plugin/marketplace.json`](.cursor-plugin/marketplace.json)) and works with Cursor via symlinked skill directories or the team plugin UI.
 
 Runtime orchestration (control plane, TS agent loop, Docker stack) lives in a separate private repo and is **not** included here.
 
@@ -27,7 +27,7 @@ See [docs/CLAUDE-MARKETPLACE.md](docs/CLAUDE-MARKETPLACE.md).
 |-----|-------------|
 | [docs/SKILLS.md](docs/SKILLS.md) | Bundle format, manifest schema, skill catalog |
 | [docs/INSTALL.md](docs/INSTALL.md) | Install paths and updates |
-| [docs/CLAUDE-MARKETPLACE.md](docs/CLAUDE-MARKETPLACE.md) | Marketplace usage |
+| [docs/CLAUDE-MARKETPLACE.md](docs/CLAUDE-MARKETPLACE.md) | Claude Code & Cursor marketplace usage |
 | [docs/GITHUB-AIDLC-PROJECT.md](docs/GITHUB-AIDLC-PROJECT.md) | GitHub Projects v2 + labels + Actions + Mac cron for AIDLC |
 | [AGENTS.md](AGENTS.md) | Contributor / agent instructions |
 
@@ -36,8 +36,9 @@ See [docs/CLAUDE-MARKETPLACE.md](docs/CLAUDE-MARKETPLACE.md).
 - **`skills/`** — All skill and agent bundles (`SKILL.md` + optional `tool.ts`, `system-prompt.md`).
 - **`skills/spec-management/templates/`** — **Product Spec**, **Tech Spec**, **ADR** template (`adr-template.md`), and **ADR folder** guidance (`adr-guidance.md`) — all packaged with the `spec-management` skill / plugin.
 - **`agent-library-mcp/`** — Manifest validation and CI helpers (`npm run validate-manifests`).
-- **`.claude-plugin/marketplace.json`** — Marketplace catalog.
-- **`plugins/ai-dlc-skills/`** — Plugin manifest + copy of `skills/` (synced via `./scripts/sync-plugin-skills.sh`).
+- **`.claude-plugin/marketplace.json`** — Claude Code marketplace catalog.
+- **`.cursor-plugin/marketplace.json`** — Cursor team marketplace catalog (`metadata.pluginRoot`: `plugins`).
+- **`plugins/ai-dlc-skills/`** — `.claude-plugin/` + `.cursor-plugin/` manifests and copy of `skills/` (synced via `./scripts/sync-plugin-skills.sh`).
 - **`scripts/`** — `aidlc-cron.sh`, `prompts/`, `launchd/` examples for GitHub + Claude automation ([docs/GITHUB-AIDLC-PROJECT.md](docs/GITHUB-AIDLC-PROJECT.md)).
 
 ## License
