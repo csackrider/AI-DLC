@@ -10,6 +10,7 @@ on:
       - ".cursor-plugin/**"
       - "plugins/ai-dlc-skills/.cursor-plugin/**"
       - "plugins/ai-dlc-skills/.claude-plugin/**"
+      - "scripts/validate-cursor-marketplace.mjs"
   push:
     branches:
       - main
@@ -21,6 +22,7 @@ on:
       - ".cursor-plugin/**"
       - "plugins/ai-dlc-skills/.cursor-plugin/**"
       - "plugins/ai-dlc-skills/.claude-plugin/**"
+      - "scripts/validate-cursor-marketplace.mjs"
 
 permissions:
   contents: read
@@ -45,6 +47,9 @@ jobs:
       - name: Validate skill manifests (Zod)
         working-directory: agent-library-mcp
         run: npm run validate-manifests
+
+      - name: Validate Cursor team marketplace layout
+        run: node scripts/validate-cursor-marketplace.mjs
 
       - name: Verify plugin copy matches skills/
         run: ./scripts/sync-plugin-skills.sh --check

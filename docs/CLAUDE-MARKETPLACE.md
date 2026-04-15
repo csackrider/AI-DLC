@@ -13,7 +13,20 @@ Skills are the primary plugin. Source bundles live in [../skills/](../skills/); 
 
 **Claude Code** keeps using [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json) and [`plugins/ai-dlc-skills/.claude-plugin/plugin.json`](../plugins/ai-dlc-skills/.claude-plugin/plugin.json) — same `skills/` tree under `plugins/ai-dlc-skills/skills/`.
 
-If the dashboard shows **“No plugins found”** or a misleading connection error, confirm these paths exist on **`main`** and use **Refresh** on the marketplace (or disconnect/re-add the repo). The issue is often missing manifests, not VPN.
+### Troubleshooting (team marketplace still empty)
+
+The manifests in this repo are validated with the same checks as [Cursor’s plugin template](https://github.com/cursor/plugin-template) — run from the repo root:
+
+```bash
+node scripts/validate-cursor-marketplace.mjs
+```
+
+If that prints **Validation passed** but the Cursor **dashboard** still shows **No plugins** or a generic connection/VPN error:
+
+1. **Import URL** — Use the exact repo URL GitHub shows in the browser, including **casing**: `https://github.com/queen-of-code/AI-DLC` (repo name is **`AI-DLC`**, not `ai-dlc`). Some clients are case-sensitive when fetching `raw.githubusercontent.com` paths.
+2. **Branch** — Team marketplace reads **`main`** (default branch). Confirm `.cursor-plugin/marketplace.json` exists on `main`.
+3. **Refresh** — In **Settings → Plugins → Team marketplaces**, remove the entry and **add** it again, or use **Refresh** and wait a few minutes for re-indexing.
+4. **Local check** — Symlink the plugin under `~/.cursor/plugins/local/` and reload the window (see [Plugins reference](https://cursor.com/docs/reference/plugins)) to confirm the bundle loads outside the team indexer.
 
 ## Claude Code marketplace
 

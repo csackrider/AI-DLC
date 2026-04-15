@@ -29,3 +29,5 @@ npm run validate-manifests
 ```
 
 PRs that touch `skills/**` run [`.github/workflows/skill-ci.yml`](.github/workflows/skill-ci.yml).
+
+**Cursor team marketplace:** after changing [`.cursor-plugin/marketplace.json`](.cursor-plugin/marketplace.json) or [`plugins/ai-dlc-skills/.cursor-plugin/plugin.json`](plugins/ai-dlc-skills/.cursor-plugin/plugin.json), run `node scripts/validate-cursor-marketplace.mjs` (same rules as [cursor/plugin-template](https://github.com/cursor/plugin-template)). CI runs this in [`.github/workflows/plugin-skills-sync.yml`](.github/workflows/plugin-skills-sync.yml).
