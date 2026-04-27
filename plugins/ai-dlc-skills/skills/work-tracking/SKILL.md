@@ -7,7 +7,7 @@ tags: [project-management, work-tracking, linear, github, issues]
 requires: []
 author: Melissa Benua
 created_at: 2026-03-07
-updated_at: 2026-04-20
+updated_at: 2026-04-22
 ---
 
 # Work Tracking
@@ -176,6 +176,8 @@ Use standalone items when:
 
 ## Platform Mapping
 
+**Declare your system** in the app repo’s **`AGENTS.md`** (see [ISSUE-TRACKER-PORTABILITY.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/ISSUE-TRACKER-PORTABILITY.md) in AI-DLC) so phase orchestrators don’t assume GitHub. Use **`agent-issue-tracker-setup`** to fill that block.
+
 ### GitHub
 
 | Concept | GitHub Implementation |
@@ -215,6 +217,10 @@ To drive AIDLC from a **Project (classic)** board (**columns** = phases), **`aid
 - Use parent/sub-issue for features
 - Set estimates on child items
 - Use cycles for time-boxing
+
+### Jira
+
+**Not specified here** — AIDLC leaves a **hook** only. Record the real mapping in the consumer repo’s **`AGENTS.md` → Issue tracker (AIDLC)** (and optional org notes under `docs/` if you need more than the table). See [ISSUE-TRACKER-PORTABILITY.md](https://github.com/queen-of-code/AI-DLC/blob/main/docs/ISSUE-TRACKER-PORTABILITY.md) and **`agent-issue-tracker-setup`**.
 
 ## Issue Templates
 
