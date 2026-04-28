@@ -35,38 +35,21 @@ runs:
           const OWNER = context.repo.owner;
           const REPO  = context.repo.repo;
 
-          // 1. Find issue number and completed phase.
-          // Cursor branch names are not reliable for phase (e.g. cursor/issue-67-tech-spec-b962
-          // instead of cursor/issue-67-design-...). Use PR title as the primary source:
-          // "Design: Tech Spec for ..." or "Plan: Product Spec for ...".
-          // Fall back to branch name if the title doesn't match.
-          const branch   = context.payload.pull_request.head.ref;
-          const prTitle  = context.payload.pull_request.title;
+          // 1. Find the linked issue number.
+          // The issue number is reliable in Cursor branch names: cursor/issue-{N}-{anything}.
+          // The phase is NOT reliable in the branch name (Cursor uses the task description,
+          // e.g. "tech-spec" instead of "design"). Instead, we read the current "AIDLC phase"
+          // field value directly from the project board -- that IS the completed phase.
+          const branch = context.payload.pull_request.head.ref;
+          const branchMatch = branch.match(/cursor\/issue-(\d+)/i);
+          const titleMatch  = context.payload.pull_request.title.match(/#(\d+)/);
+          const issueNumStr = branchMatch ? branchMatch[1] : (titleMatch ? titleMatch[1] : null);
 
-          // Try PR title first: "Phase: ... (#N)" or "Phase: ..."
-          const titleMatch = prTitle.match(/^(plan|design|build|review|ship)\b/i);
-
-          // Issue number: from branch cursor/issue-{N}-... or from title (#N)
-          const branchIssueMatch = branch.match(/cursor\/issue-(\d+)/i);
-          const titleIssueMatch  = prTitle.match(/#(\d+)/);
-          const issueNumStr      = branchIssueMatch ? branchIssueMatch[1] : (titleIssueMatch ? titleIssueMatch[1] : null);
-
-          if (!titleMatch || !issueNumStr) {
-            core.info('PR "' + prTitle + '" (branch: ' + branch + ') does not match AIDLC pattern -- skipping.');
+          if (!issueNumStr) {
+            core.info('No linked issue found in branch "' + branch + '" or PR title -- skipping.');
             return;
           }
-
-          const issueNumber    = parseInt(issueNumStr, 10);
-          const completedPhase = titleMatch[1].toLowerCase();
-
-          const NEXT_PHASE = { plan: 'Design', design: 'Build', build: 'Review', review: 'Ship' };
-          const nextPhaseLabel = NEXT_PHASE[completedPhase];
-          if (!nextPhaseLabel) {
-            core.info('Phase "' + completedPhase + '" has no automatic next phase -- nothing to do.');
-            return;
-          }
-
-          core.info('Issue #' + issueNumber + ': ' + completedPhase + ' -> ' + nextPhaseLabel);
+          const issueNumber = parseInt(issueNumStr, 10);
 
           const projectOwner  = process.env.PROJECT_OWNER  || OWNER;
           const projectNumber = parseInt(process.env.PROJECT_NUMBER || '0', 10);
@@ -88,9 +71,10 @@ runs:
             return json.data;
           };
 
-          // 2. Query project metadata: project node ID, item ID, field ID, option IDs.
+          // 2. Query project: find the item and read its CURRENT "AIDLC phase" field value.
+          // That current value IS the completed phase -- no string parsing needed.
           const projectData = await gql(`
-            query($login: String!, $number: Int!, $issueNumber: Int!) {
+            query($login: String!, $number: Int!) {
               user(login: $login) {
                 projectV2(number: $number) {
                   id
@@ -104,17 +88,40 @@ runs:
                     nodes {
                       id
                       content { ... on Issue { number } }
+                      fieldValueByName(name: "AIDLC phase") {
+                        ... on ProjectV2ItemFieldSingleSelectValue {
+                          name
+                        }
+                      }
                     }
                   }
                 }
               }
-            }`, { login: projectOwner, number: projectNumber, issueNumber });
+            }`, { login: projectOwner, number: projectNumber });
 
           const project = projectData?.user?.projectV2;
           if (!project) { core.setFailed('Could not resolve project #' + projectNumber); return; }
 
           const item = project.items.nodes.find(n => n.content?.number === issueNumber);
-          if (!item) { core.setFailed('Issue #' + issueNumber + ' not on the AIDLC board.'); return; }
+          if (!item) {
+            core.info('Issue #' + issueNumber + ' not on the AIDLC board -- skipping.');
+            return;
+          }
+
+          const currentPhase = item.fieldValueByName?.name?.toLowerCase();
+          if (!currentPhase) {
+            core.info('Issue #' + issueNumber + ' has no AIDLC phase set on the board -- skipping.');
+            return;
+          }
+
+          const NEXT_PHASE = { plan: 'Design', design: 'Build', build: 'Review', review: 'Ship' };
+          const nextPhaseLabel = NEXT_PHASE[currentPhase];
+          if (!nextPhaseLabel) {
+            core.info('Phase "' + currentPhase + '" has no automatic next phase -- nothing to do.');
+            return;
+          }
+
+          core.info('Issue #' + issueNumber + ': ' + currentPhase + ' -> ' + nextPhaseLabel);
 
           const field = project.field;
           if (!field) { core.setFailed('"AIDLC phase" field not found on the board.'); return; }
