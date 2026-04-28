@@ -18,7 +18,7 @@ inputs:
     required: false
     default: ''
   project-owner:
-    description: GitHub login that owns the Projects v2 board (default: repo owner)
+    description: "GitHub login that owns the Projects v2 board (default: repo owner)"
     required: false
     default: ''
   project-number:

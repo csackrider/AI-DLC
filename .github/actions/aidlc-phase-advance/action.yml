@@ -12,11 +12,11 @@ inputs:
     description: GitHub PAT with `project` scope for reading/writing personal account Projects v2
     required: true
   project-owner:
-    description: GitHub login that owns the Projects v2 board (default: repo owner)
+    description: "GitHub login that owns the Projects v2 board (default: repo owner)"
     required: false
     default: ''
   project-number:
-    description: Projects v2 board number (from the board URL)
+    description: "Projects v2 board number (from the board URL)"
     required: false
     default: ''
 
