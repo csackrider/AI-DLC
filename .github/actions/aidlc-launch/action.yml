@@ -125,10 +125,14 @@ runs:
 
           // 4. Build prompt. Only phase-specific content is the hard stop.
           // The SKILL.md handles all sub-skill orchestration.
+          // Note: for plan/design/build, autoCreatePr=true below means Cursor opens
+          // the PR automatically when the agent finishes -- the agent does NOT need
+          // to run `gh pr create` (which fails with "Resource not accessible by integration"
+          // inside the Cursor GitHub App environment).
           const hardStops = {
-            plan:   'HARD STOP: deliver `feature/<slug>/product-spec.md` only. Open a draft PR. Do NOT write a Tech Spec.',
-            design: 'HARD STOP: deliver `feature/<slug>/tech-spec.md` only. Open a draft PR. Do NOT write code.',
-            build:  'HARD STOP: deliver a PR with passing CI. Do NOT run review.',
+            plan:   'HARD STOP: deliver `feature/<slug>/product-spec.md` only. Commit to a branch -- Cursor will open the PR automatically. Do NOT write a Tech Spec.',
+            design: 'HARD STOP: deliver `feature/<slug>/tech-spec.md` only. Commit to a branch -- Cursor will open the PR automatically. Do NOT write code.',
+            build:  'HARD STOP: deliver committed code with passing CI. Cursor will open the PR automatically. Do NOT run review.',
             review: 'HARD STOP: post PR review comments only. Do NOT merge. Do NOT change code.',
             ship:   'HARD STOP: deliver scorecard + learn notes. Close issue if all criteria are met.',
           };
@@ -156,7 +160,10 @@ runs:
           ].join('\n');
 
           // 5. Launch the Cursor Cloud Agent.
-          const autoCreatePr = phase === 'build';
+          // autoCreatePr: Cursor opens the PR after the agent finishes for phases
+          // that produce a branch. The agent must NOT call `gh pr create` -- the
+          // Cursor GitHub App token does not have that permission.
+          const autoCreatePr = ['plan', 'design', 'build'].includes(phase);
           const defaultBranch = process.env.DEFAULT_BRANCH || 'main';
           const launchRes = await fetch('https://api.cursor.com/v0/agents', {
             method: 'POST',
