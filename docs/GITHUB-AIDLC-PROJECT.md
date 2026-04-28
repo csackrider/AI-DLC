@@ -235,8 +235,14 @@ so future agents start from a cached image with submodules and dependencies alre
 
 After environment setup, complete the remaining steps:
 
-1. **GitHub secrets**: `CURSOR_API_KEY` in repo Settings -> Secrets -> Actions.
-2. **GitHub variables** (optional): `AIDLC_PROJECT_OWNER`, `AIDLC_PROJECT_NUMBER`.
+1. **GitHub secrets** (repo Settings -> Secrets -> Actions):
+
+   | Secret | Value |
+   |--------|-------|
+   | `CURSOR_API_KEY` | API key from cursor.com/dashboard/integrations -> API Keys |
+   | `AIDLC_PROJECT_PAT` | GitHub PAT with **`project`** scope. `GITHUB_TOKEN` cannot read personal account Projects v2 — this PAT is required for the GraphQL board query. You can use the same PAT value as `AIDLC_GH_CALLBACK_TOKEN`. |
+
+2. **GitHub variables** (optional, repo Settings -> Variables -> Actions): `AIDLC_PROJECT_OWNER`, `AIDLC_PROJECT_NUMBER`.
 3. **Cursor dashboard secret**: `AIDLC_GH_CALLBACK_TOKEN` (GitHub PAT, `repo` scope) in [cursor.com/dashboard/cloud-agents](https://cursor.com/dashboard/cloud-agents) -> Environment. **Do not add to GitHub secrets or commit it.**
 4. **Labels**: create `aidlc_work:unstarted` and `aidlc_work:in_progress` in the repo.
 5. **Workflow**: copy [`docs/templates/github-workflows/aidlc-agent-launch.yml`](templates/github-workflows/aidlc-agent-launch.yml) to `.github/workflows/aidlc-agent-launch.yml` in your app repo. Adjust `DEFAULT_BRANCH` at the top of the script block.
