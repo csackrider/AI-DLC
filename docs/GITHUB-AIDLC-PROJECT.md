@@ -143,8 +143,133 @@ gh workflow run aidlc-project-label-sync.yml -f issue_number=123
 
 ---
 
+## Personal-account path: Projects v2 + Cursor Cloud Agents
+
+If you are on a **personal GitHub account** (not an org), two constraints apply:
+
+| Constraint | Why |
+|-----------|-----|
+| Cannot create new classic projects | GitHub deprecated new classic project creation on personal accounts (late 2023). |
+| `projects_v2_item` events never fire | This webhook only fires for **org-owned** Projects v2, not user-owned projects. |
+
+The solution is to use `issues.labeled` as the event-driven trigger in GitHub Actions,
+read the board phase via GraphQL, and launch a **Cursor Cloud Agent** instead of a local `claude` session.
+
+### How it works
+
+```
+Developer action                  GitHub Actions              Cursor Cloud Agent
+-----------------                 --------------              ------------------
+1. Move board card to phase       (no event fires)
+2. Apply aidlc_work:unstarted  -> issues.labeled fires
+                                  3. Read phase via GraphQL
+                                  4. Swap label -> in_progress
+                                  5. Launch Cursor agent   -> Agent runs skill
+                                                              Agent posts summary comment
+                                                              Agent clears in_progress label
+                                                              (via AIDLC_GH_CALLBACK_TOKEN)
+```
+
+### Key design decisions
+
+- **`issues.labeled` trigger** fires reliably on personal accounts; `projects_v2_item` and `project_card` do not.
+- **GraphQL to read board phase**: The workflow queries the Projects v2 `AIDLC phase` single-select field to determine which skill to run, without needing a separate config file.
+- **Agent self-callback**: The Cursor agent is given a GitHub PAT (`AIDLC_GH_CALLBACK_TOKEN`) via the Cursor dashboard environment, not GitHub secrets. The agent calls the GitHub API itself to clear `aidlc_work:in_progress` when done -- no polling or cron.
+- **Phase-scoped prompts with hard stops**: Each prompt names exactly one deliverable and includes explicit `HARD STOP` and `Do NOT` directives to prevent phase bleed when running headlessly (no human approval gate).
+- **Immediate feedback**: The workflow posts a "launching..." comment before calling the Cursor API, then updates it with the agent link. Developers never wonder if the automation fired.
+
+### Setup
+
+**Step 0 (required before anything else): Configure the Cloud Agent environment**
+
+Cloud agents run on an isolated Ubuntu VM. The VM must be configured so the agent has the right
+tools installed and the skills are on disk. You must do this once per repo before any automated
+agent run will succeed.
+
+**Why the skills path matters:** The prompts tell the agent to read skill files at `.claude/skills/`.
+This path exists when your repo vendors AI-DLC as a **git submodule** — the approach used by repos
+that follow the AIDLC tutorial (e.g. `alexa-recipe-app`). It is **different** from the global
+`install.sh` approach, which links skills into `~/.cursor/skills` on your local machine but leaves
+nothing in the repo for a Cloud Agent to read.
+
+**If you haven't done the submodule setup yet**, do it once in your repo:
+
+```bash
+# Add AI-DLC as a submodule
+git submodule add https://github.com/queen-of-code/AI-DLC.git .claude/deps/ai-dlc
+
+# Create the .claude/skills symlink that prompts reference
+cd .claude && ln -s deps/ai-dlc/skills skills && cd ..
+
+# Commit both
+git add .gitmodules .claude/deps/ai-dlc .claude/skills
+git commit -m "chore: vendor AI-DLC as submodule at .claude/deps/ai-dlc"
+```
+
+**If your repo already has the submodule** (`.claude/deps/ai-dlc/` and `.claude/skills/` exist),
+you are set -- just ensure the Cloud Agent initializes it at runtime (below).
+
+The Cursor Cloud Agent checks out your repo but does **not** initialize submodules by default --
+your `install` command must do that.
+
+1. Go to [cursor.com/onboard](https://cursor.com/onboard), connect your GitHub account, and select the repo.
+2. Add a `.cursor/environment.json` to your repo (see [Cursor Cloud Agent setup docs](https://cursor.com/docs/cloud-agent/setup)):
+
+```json
+{
+  "install": "git submodule update --init --recursive && <your-dependency-install-command>"
+}
+```
+
+The `git submodule update --init --recursive` populates `.claude/deps/ai-dlc/` so the `.claude/skills/`
+symlink resolves. Without it, the agent will not find any skills.
+
+The `install` command runs before every agent and must be idempotent. Add your repo's dependency
+setup after the submodule init. Examples by stack:
+- Node.js: `git submodule update --init --recursive && npm install`
+- .NET: `git submodule update --init --recursive && dotnet restore`
+- Python: `git submodule update --init --recursive && pip install -r requirements.txt`
+
+Once setup is complete, **take a snapshot** at [cursor.com/onboard](https://cursor.com/onboard)
+so future agents start from a cached image with submodules and dependencies already present.
+
+After environment setup, complete the remaining steps:
+
+1. **GitHub secrets**: `CURSOR_API_KEY` in repo Settings -> Secrets -> Actions.
+2. **GitHub variables** (optional): `AIDLC_PROJECT_OWNER`, `AIDLC_PROJECT_NUMBER`.
+3. **Cursor dashboard secret**: `AIDLC_GH_CALLBACK_TOKEN` (GitHub PAT, `repo` scope) in [cursor.com/dashboard/cloud-agents](https://cursor.com/dashboard/cloud-agents) -> Environment. **Do not add to GitHub secrets or commit it.**
+4. **Labels**: create `aidlc_work:unstarted` and `aidlc_work:in_progress` in the repo.
+5. **Workflow**: copy [`docs/templates/github-workflows/aidlc-agent-launch.yml`](templates/github-workflows/aidlc-agent-launch.yml) to `.github/workflows/aidlc-agent-launch.yml` in your app repo. Adjust `DEFAULT_BRANCH` at the top of the script block.
+
+### Per-feature workflow
+
+1. Create a GitHub issue with `AIDLC feature folder: feature/<kebab-slug>/` in the body.
+2. Add the issue to your Projects v2 board.
+3. Move the board card to the target phase column (e.g. **Plan**).
+4. Apply the label **`aidlc_work:unstarted`** to the issue.
+
+The workflow fires, posts an immediate comment, and launches the agent. When the agent finishes, it posts a summary and clears `aidlc_work:in_progress`. Move the card to the next phase column and re-apply `aidlc_work:unstarted` to continue.
+
+### Manual trigger (testing or re-runs)
+
+```bash
+gh workflow run aidlc-agent-launch.yml \
+  -f issue_number=123 \
+  -f phase=plan
+```
+
+### Prompt templates
+
+Per-phase headless prompt templates (markdown source): [`scripts/prompts/cloud-agent/`](../scripts/prompts/cloud-agent/).
+
+The workflow builds the actual prompt text dynamically; these files are the human-readable source of truth.
+
+---
+
 ## Links
 
 - Tutorial (manual queue): [alexa-recipe-app `docs/github-queue.md`](https://github.com/queen-of-code/alexa-recipe-app/blob/main/docs/github-queue.md)
 - Work tracking skill: [skills/work-tracking/SKILL.md](../skills/work-tracking/SKILL.md)
 - Actions: [`project_card` event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#project_card) (projects **(classic)** only)
+- Actions: [`issues.labeled` event](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#issues) (personal account path)
+- Cursor Cloud Agents API: [cursor.com/docs/cloud-agent/api/endpoints](https://cursor.com/docs/cloud-agent/api/endpoints)
