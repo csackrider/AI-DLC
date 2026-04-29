@@ -246,6 +246,7 @@ After environment setup, complete the remaining steps:
 3. **Cursor dashboard secret**: `AIDLC_GH_CALLBACK_TOKEN` (GitHub PAT, `repo` scope) in [cursor.com/dashboard/cloud-agents](https://cursor.com/dashboard/cloud-agents) -> Environment. **Do not add to GitHub secrets or commit it.**
 4. **Labels**: create `aidlc_work:unstarted` and `aidlc_work:in_progress` in the repo.
 5. **Workflow**: copy [`docs/templates/github-workflows/aidlc-agent-launch.yml`](templates/github-workflows/aidlc-agent-launch.yml) to `.github/workflows/aidlc-agent-launch.yml` in your app repo. Adjust `DEFAULT_BRANCH` at the top of the script block.
+6. **PR handoff workflow (recommended)**: copy [`docs/templates/github-workflows/aidlc-pr-review-handoff.yml`](templates/github-workflows/aidlc-pr-review-handoff.yml) to `.github/workflows/aidlc-pr-review-handoff.yml` in your app repo to auto-assign/tag the human reviewer when Cursor PRs are opened/reopened/ready-for-review.
 
 ### Per-feature workflow
 
@@ -269,6 +270,13 @@ gh workflow run aidlc-agent-launch.yml \
 Per-phase headless prompt templates (markdown source): [`scripts/prompts/cloud-agent/`](../scripts/prompts/cloud-agent/).
 
 The workflow builds the actual prompt text dynamically; these files are the human-readable source of truth.
+
+### Optional: PR handoff reviewer config
+
+`aidlc-pr-review-handoff.yml` supports optional repository variables:
+
+- `AIDLC_REVIEW_ASSIGNEE` (default: `csackrider`)
+- `AIDLC_REVIEW_READY_COMMENT` (default: `Hey this is ready for your review`)
 
 ---
 

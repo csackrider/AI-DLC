@@ -1,0 +1,81 @@
+# AIDLC: assign + mention human reviewer on Cursor PR readiness (template)
+#
+# Copy this file to YOUR APPLICATION REPO as:
+#   .github/workflows/aidlc-pr-review-handoff.yml
+#
+# This workflow runs when a PR is opened/reopened or marked ready_for_review.
+# It targets Cursor-created branches (cursor/...) and performs a human handoff:
+#   - assign the PR to the configured reviewer
+#   - post/update a PR comment that @mentions the reviewer
+#
+# Optional variables (repo Settings -> Variables -> Actions):
+#   AIDLC_REVIEW_ASSIGNEE      - default: csackrider
+#   AIDLC_REVIEW_READY_COMMENT - default: Hey this is ready for your review
+#
+# Notes:
+# - Uses a stable marker comment to avoid duplicate notifications.
+# - Works with auto-created PRs from Cursor Cloud Agents.
+
+name: AIDLC PR review handoff
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  handoff:
+    if: startsWith(github.event.pull_request.head.ref, 'cursor/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign and notify reviewer
+        uses: actions/github-script@v7
+        env:
+          REVIEW_ASSIGNEE: ${{ vars.AIDLC_REVIEW_ASSIGNEE }}
+          REVIEW_COMMENT: ${{ vars.AIDLC_REVIEW_READY_COMMENT }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.pull_request.number;
+            const assignee = process.env.REVIEW_ASSIGNEE || 'csackrider';
+            const reviewComment = process.env.REVIEW_COMMENT || 'Hey this is ready for your review';
+            const marker = '<!-- aidlc-review-handoff -->';
+            const body = `${marker}\n${reviewComment} @${assignee}`;
+
+            await github.rest.issues.addAssignees({
+              owner,
+              repo,
+              issue_number,
+              assignees: [assignee],
+            }).catch(async (e) => {
+              core.warning(`Could not assign ${assignee}: ${e.message}`);
+            });
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }
