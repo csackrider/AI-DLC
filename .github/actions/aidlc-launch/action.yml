@@ -29,6 +29,14 @@ inputs:
     description: Default branch for the Cursor agent to work from (main or master)
     required: false
     default: main
+  review-assignee:
+    description: GitHub login to assign on review-ready PR handoff
+    required: false
+    default: csackrider
+  review-ready-comment:
+    description: Exact PR handoff comment to post when ready for human review
+    required: false
+    default: Hey this is ready for your review
 
 runs:
   using: composite
@@ -41,12 +49,16 @@ runs:
         PROJECT_OWNER:     ${{ inputs.project-owner }}
         PROJECT_NUMBER:    ${{ inputs.project-number }}
         DEFAULT_BRANCH:    ${{ inputs.default-branch }}
+        REVIEW_ASSIGNEE:   ${{ inputs.review-assignee }}
+        REVIEW_COMMENT:    ${{ inputs.review-ready-comment }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
           const OWNER     = context.repo.owner;
           const REPO      = context.repo.repo;
           const REPO_FULL = OWNER + '/' + REPO;
+          const REVIEW_ASSIGNEE = process.env.REVIEW_ASSIGNEE || OWNER;
+          const REVIEW_COMMENT = process.env.REVIEW_COMMENT || 'Hey this is ready for your review';
 
           const PHASE_MAP = { Plan: 'plan', Design: 'design', Build: 'build', Review: 'review', Ship: 'ship' };
           const TERMINAL  = new Set(['Idea', 'Done', "Won't do"]);
@@ -157,7 +169,11 @@ runs:
             '3. Read `.claude/skills/' + phase + '/SKILL.md` and follow its Orchestration section.',
             '   Headless override: skip all "ask in chat" / "conversation first" steps.',
             '   Document assumptions in the output instead of asking.',
-            '4. Post a summary comment on issue #' + issueNumber + ' with results and next-phase instructions.',
+            '4. If a PR exists (or is auto-created), perform the human-review handoff on that PR:',
+            '   - assign `' + REVIEW_ASSIGNEE + '`',
+            '   - post this exact text in a PR comment and include @mention: "' + REVIEW_COMMENT + '" + ` @' + REVIEW_ASSIGNEE + '`.',
+            '   Use GitHub REST API via `curl` with `$AIDLC_GH_CALLBACK_TOKEN`.',
+            '5. Post a summary comment on issue #' + issueNumber + ' with results and next-phase instructions.',
             '',
             'When done, clear the in-progress label:',
             clearLabelCmd,
