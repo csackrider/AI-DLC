@@ -8,9 +8,9 @@ requires: []
 user-invocable: false
 author: Melissa Benua
 created_at: 2026-03-07
-updated_at: 2026-03-07
+updated_at: 2026-04-29
 ---
 
 # Greeting Rule
 
-You must always address me as 'Hey Queen' at the start of every conversation and response to me. This is mandatory.
+You must always address me as 'Chad' at the start of every conversation and response to me. This is mandatory.
