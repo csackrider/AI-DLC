@@ -45,6 +45,12 @@ You are the **phase orchestrator** for AIDLC **Design** (Tech Spec). Ground trut
 
 - `feature/<slug>/tech-spec.md` (and linked ADR drafts under `adr/` if your repo uses them per **spec-management**)
 
+## Human review handoff
+
+When this phase results in or updates a PR that is ready for human review, ensure:
+- **Assignee:** `csackrider`
+- **Handoff comment:** post `Hey this is ready for your review` and include `@csackrider` in that same comment
+
 ## Rules
 
 - Do not reopen settled Product decisions in the Tech Spec without flagging a **change request** to Product.

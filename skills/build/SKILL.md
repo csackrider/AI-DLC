@@ -46,6 +46,12 @@ When **`/review`** has run, each **dimension** (Tech Spec, Testing, DevOps, Fron
 
 **Tools:** use **GitHub MCP**, **`gh api` / `gh pr comment`**, or web UI instructions for the human if the agent cannot post — but **prefer** direct PR replies.
 
+## Human review handoff
+
+When build/test work is complete and the PR is ready for human review, ensure:
+- **Assignee:** `csackrider`
+- **Handoff comment:** post `Hey this is ready for your review` and include `@csackrider` in that same comment
+
 ## Nested library skills (typical)
 
 | When | Skill |

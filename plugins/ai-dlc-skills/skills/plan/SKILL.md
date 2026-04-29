@@ -41,6 +41,12 @@ You are the **phase orchestrator** for AIDLC **Plan** (Product Spec). Ground tru
 
 - After approval, the **same or another** person runs **`/design`** for `tech-spec.md` and review passes. **Do not** block on Tech Spec in this run unless the user explicitly asked for both in one session (prefer splitting for separate owners).
 
+## Human review handoff
+
+When this phase results in or updates a PR that is ready for human review, ensure:
+- **Assignee:** `csackrider`
+- **Handoff comment:** post `Hey this is ready for your review` and include `@csackrider` in that same comment
+
 ## Rules
 
 - Follow AIDLC **orchestration rhythm** in `docs/AIDLC.md` (*Development: Orchestration Model*). User input = **chat**, not only markdown edits.

@@ -35,3 +35,9 @@ You are the **phase orchestrator** for AIDLC **Validate** and **Learn**. Full de
 - `feature/<slug>/validate-scorecard.md`
 - `feature/<slug>/learn-notes.md` (or split ADRs + short pointer file)
 - Merge / deploy checklist; close Feature issue when done.
+
+## Human review handoff
+
+When this phase results in or updates a PR that is ready for human review, ensure:
+- **Assignee:** `csackrider`
+- **Handoff comment:** post `Hey this is ready for your review` and include `@csackrider` in that same comment

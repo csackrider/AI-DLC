@@ -30,6 +30,10 @@ Each review **dimension** below behaves like a **dedicated reviewer**: it should
 
 Also write or update **`feature/<slug>/review-report.md`** as a **durable mirror** of the same content (copy from posted comments or generate once and post from the file).
 
+When the review pass is complete and ready for human sign-off, make sure the PR has:
+- **Assignee:** `csackrider`
+- **Handoff comment:** `Hey this is ready for your review` and include `@csackrider` in that comment
+
 ## Inputs
 
 - `feature/<slug>/tech-spec.md` (approved) — **source of truth for “done”**
