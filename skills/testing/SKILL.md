@@ -300,4 +300,6 @@ When practicing Test-Driven Development:
 
 ## Additional Resources
 
-For framework-specific guidance, see [frameworks/](frameworks/) directory.
+The [frameworks/](frameworks/) directory holds **short supplemental notes** (e.g. Jest, pytest, .NET) referenced from this skill — not separate installable bundles.
+
+For **Playwright** E2E in TypeScript (Page Objects, fixtures, CI, Gherkin in issues), use the dedicated **`playwright-testing`** skill bundle (`skills/playwright-testing/`) so agents and marketplaces resolve it as its own manifest.

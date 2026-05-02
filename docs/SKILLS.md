@@ -115,6 +115,7 @@ Rules:
 | `git-workflow` | skill | build, test, review | Git workflow standards including commit messages and branch management |
 | `greeting` | skill | plan | Personal greeting preference |
 | `mobile-apple` | skill | build | iOS and macOS development patterns using Swift and SwiftUI |
+| `playwright-testing` | skill | build, test, review | Playwright E2E in TypeScript — Page Objects, fixtures, CI; optional Gherkin (Cucumber/BDD) for issue-driven acceptance tests |
 | `report-bug` | skill | plan, design, build, test, review | Bug triage and structured report — environment, repro, exact errors, observability; conversation-first; never assumes |
 | `spec-management` | skill | plan, design | Product Spec, Tech Spec, and ADR templates; conversation-first Product Spec; link ADRs from Tech Specs |
 | `testing` | skill | build, review | Apply comprehensive testing best practices |
@@ -127,6 +128,7 @@ Rules:
 | `agent-devops-review` | agent | review | DevOps dimension for `/review` — CI/CD, containers, rollout, monitoring vs Tech Spec |
 | `agent-security-review` | agent | review | Security dimension for `/review` — secrets, auth, deps, obvious web/data issues |
 | `agent-issue-tracker-setup` | agent | plan | Onboard AIDLC issue-tracker choice — `AGENTS.md` table, checklists (GitHub / Linear / Jira) |
+| `agent-testing` | agent | build, test, review | Test automation — general testing practice plus Playwright (POM, fixtures, CI, optional Gherkin/BDD) |
 
 See `skills/agents/` for the full agent library.
 
